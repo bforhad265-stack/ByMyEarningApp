@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <title>Super Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --gold: #d4af37; --dark: #1a1a1a; }
+        body { font-family: 'Poppins', sans-serif; margin: 0; display: flex; background: #f4f4f4; height: 100vh; overflow: hidden; }
+        .sidebar { width: 250px; background: var(--dark); color: var(--gold); padding: 20px; display: flex; flex-direction: column; }
+        .nav-link { color: #ccc; padding: 15px; margin-bottom: 5px; cursor: pointer; display: flex; align-items: center; gap: 10px; border-radius: 5px; }
+        .nav-link.active, .nav-link:hover { background: var(--gold); color: black; font-weight: bold; }
+        .content { flex: 1; padding: 30px; overflow-y: auto; }
+        .section { display: none; } .section.active { display: block; }
+        .card { background: white; padding: 25px; border-radius: 15px; margin-bottom: 20px; border-top: 4px solid var(--gold); box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .req-item { background: #f9f9f9; padding: 15px; border-radius: 10px; margin-bottom: 10px; border: 1px solid #eee; display:flex; justify-content:space-between; align-items:center; }
+        input, textarea, select { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        button { background: var(--gold); color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h2 style="text-align:center;">👑 ADMIN</h2>
+        <div class="nav-link active" onclick="show('dash')"><i class="fas fa-home"></i> ড্যাশবোর্ড</div>
+        <div class="nav-link" onclick="show('proof')"><i class="fas fa-images"></i> টাস্ক প্রুফ</div>
+        <div class="nav-link" onclick="show('pay')"><i class="fas fa-wallet"></i> উইথড্রো</div>
+        <div class="nav-link" onclick="show('set')"><i class="fas fa-cogs"></i> সেটিংস</div>
+    </div>
+
+    <div class="content">
+        <div id="dash" class="section active">
+            <h1>স্বাগতম এডমিন</h1>
+            <div class="card">
+                <h3>নির্দেশনা:</h3>
+                <p>বাম পাশের মেনু থেকে সব কন্ট্রোল করুন।</p>
+            </div>
+        </div>
+
+        <div id="set" class="section">
+            <h1>সেটিংস ও লিংক</h1>
+            <div class="card">
+                <h3>🎨 অ্যাপ থিম কালার</h3>
+                <select id="themeColor">
+                    <option value="#d4af37">Gold (Default)</option>
+                    <option value="#2563eb">Blue</option>
+                    <option value="#dc2626">Red</option>
+                    <option value="#16a34a">Green</option>
+                </select>
+
+                <h3>🔗 সোশ্যাল টাস্ক লিংক</h3>
+                <p>Facebook:</p> <input type="text" id="fbLink">
+                <p>TikTok:</p> <input type="text" id="ttLink">
+                <p>Telegram:</p> <input type="text" id="tgLink">
+
+                <h3>🔗 রেগুলার টাস্ক লিংক</h3>
+                <p>Task 1:</p> <input type="text" id="link1">
+                <p>Task 2:</p> <input type="text" id="link2">
+                
+                <h3>🔔 অন্যান্য</h3>
+                <p>WhatsApp:</p> <input type="text" id="wa">
+                <p>নোটিশ:</p> <textarea id="notice"></textarea>
+                <button onclick="saveSettings()" style="width:100%; margin-top:10px;">সেভ করুন</button>
+            </div>
+        </div>
+
+        <div id="proof" class="section">
+            <h1>টাস্ক প্রুফ</h1>
+            <div class="card" id="proofList">লোড হচ্ছে...</div>
+        </div>
+
+        <div id="pay" class="section">
+            <h1>পেমেন্ট রিকোয়েস্ট</h1>
+            <div class="card" id="wList">লোড হচ্ছে...</div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+    <script>
+        const firebaseConfig = {
+          apiKey: "AIzaSyAKl90n3tBz4U689Vx4r7DDNHxCii66GRk",
+          authDomain: "money-earning-8b7f2.firebaseapp.com",
+          projectId: "money-earning-8b7f2",
+          storageBucket: "money-earning-8b7f2.firebasestorage.app",
+          messagingSenderId: "954842327634",
+          appId: "1:954842327634:web:bedc11b47ea736733bcd8b",
+          measurementId: "G-TME0VM42Y3"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        function show(id) { document.querySelectorAll('.section').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); document.querySelectorAll('.nav-link').forEach(l=>l.classList.remove('active')); event.currentTarget.classList.add('active'); }
+
+        function saveSettings() {
+            db.collection("settings").doc("appConfig").set({
+                themeColor: document.getElementById('themeColor').value,
+                fbLink: document.getElementById('fbLink').value,
+                ttLink: document.getElementById('ttLink').value,
+                tgLink: document.getElementById('tgLink').value,
+                link1: document.getElementById('link1').value,
+                link2: document.getElementById('link2').value,
+                whatsapp: document.getElementById('wa').value,
+                noticeText: document.getElementById('notice').value
+            }, {merge:true}).then(()=>alert("Saved!"));
+        }
+
+        db.collection("taskProofs").where("status","==","pending").onSnapshot(s => { 
+            let h=""; s.forEach(d=>{ let t=d.data(); h+=`<div class="req-item"><div><b>${t.userName}</b> (${t.taskId})<br><a href="${t.proofLink}" target="_blank" style="color:blue">View Screenshot</a></div><div><button onclick="payTask('${d.id}','${t.uid}')">Approve</button> <button style="background:red" onclick="db.collection('taskProofs').doc('${d.id}').update({status:'rejected'})">Reject</button></div></div>`; }); 
+            document.getElementById('proofList').innerHTML=h||"কোনো কাজ জমা নেই"; 
+        });
+
+        function payTask(did,uid) { db.collection("taskProofs").doc(did).update({status:'approved'}); db.collection("users").doc(uid).update({balance:firebase.firestore.FieldValue.increment(5)}); alert("Approved!"); }
+
+        db.collection("withdrawals").where("status","==","pending").onSnapshot(s => { 
+            let h=""; s.forEach(d=>{ let w=d.data(); h+=`<div class="req-item"><div><b>${w.name}</b> (${w.method}) - ৳${w.amount}<br>${w.number}</div><div><button onclick="updW('${d.id}','${w.uid}',${w.amount},'app')">Pay</button> <button style="background:red" onclick="updW('${d.id}','${w.uid}',${w.amount},'rej')">Reject</button></div></div>`; }); 
+            document.getElementById('wList').innerHTML=h||"কোনো পেন্ডিং রিকোয়েস্ট নেই"; 
+        });
+
+        function updW(did,uid,am,type) { 
+            const b=db.batch(); 
+            if(type=='app') { b.update(db.collection("withdrawals").doc(did),{status:'approved'}); b.update(db.collection("users").doc(uid),{pending:firebase.firestore.FieldValue.increment(-am), withdrawn:firebase.firestore.FieldValue.increment(am)}); }
+            else { b.update(db.collection("withdrawals").doc(did),{status:'rejected'}); b.update(db.collection("users").doc(uid),{pending:firebase.firestore.FieldValue.increment(-am), balance:firebase.firestore.FieldValue.increment(am)}); }
+            b.commit();
+        }
+    </script>
+</body>
+</html>

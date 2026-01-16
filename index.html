@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pro Earner</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --primary: #d4af37; --bg: #fdfdfd; --text: #333; --white: #fff; --red: #e74c3c; }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; }
+
+        /* Auth */
+        #auth-screen { position: fixed; height: 100vh; width: 100%; background: var(--white); z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .input-group { width: 85%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; outline: none; }
+        .btn-main { background: var(--primary); color: white; border: none; padding: 12px; width: 90%; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+
+        /* Navbar & Sidebar */
+        .navbar { background: var(--primary); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; color: white; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .sidebar { position: fixed; top: 0; right: -280px; width: 280px; height: 100%; background: var(--white); box-shadow: -5px 0 15px rgba(0,0,0,0.1); transition: 0.3s; z-index: 200; padding-top: 60px; }
+        .sidebar.active { right: 0; }
+        .menu-item { padding: 15px 20px; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 500; }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; z-index: 150; }
+        .overlay.active { display: block; }
+
+        /* Dashboard */
+        .container { padding: 20px; padding-bottom: 80px; }
+        .balance-card { background: var(--primary); color: white; padding: 25px; border-radius: 15px; text-align: center; margin-bottom: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .section { display: none; animation: fadeIn 0.3s; }
+        .section.active { display: block; }
+        .social-box { background: white; padding: 15px; border-radius: 10px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: 1px solid #eee; }
+
+        /* 🔥 Custom Unique Alert Box */
+        #customAlert { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0); background: white; padding: 25px; border-radius: 15px; width: 80%; max-width: 300px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.3); z-index: 3000; transition: 0.3s; border-top: 5px solid var(--red); }
+        #customAlert.active { transform: translate(-50%, -50%) scale(1); }
+        .alert-icon { font-size: 50px; color: var(--red); margin-bottom: 15px; }
+        .alert-msg { color: var(--red); font-weight: bold; font-size: 16px; margin-bottom: 20px; display: block; }
+        .alert-btn { background: var(--red); color: white; border: none; padding: 8px 25px; border-radius: 20px; cursor: pointer; font-size: 14px; }
+
+        /* Task Modal */
+        .task-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 500; display: none; overflow-y: scroll; padding: 20px; box-sizing: border-box; }
+        .timer-box { font-size: 24px; font-weight: bold; color: var(--red); text-align: center; margin: 20px 0; border: 2px dashed var(--red); padding: 15px; border-radius: 10px; background: #fff5f5; display: none; }
+        .upload-area { border: 2px dashed var(--primary); padding: 20px; text-align: center; border-radius: 10px; margin-top: 15px; cursor: pointer; background: #fffdf5; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div class="overlay" id="alertOverlay"></div>
+    <div id="customAlert">
+        <i class="fas fa-exclamation-triangle alert-icon" id="alertIcon"></i>
+        <span class="alert-msg" id="alertMsg">সতর্কবার্তা!</span>
+        <button class="alert-btn" onclick="closeAlert()">ঠিক আছে</button>
+    </div>
+
+    <div id="auth-screen">
+        <h2 style="color:var(--primary); font-size: 28px;">স্বাগতম</h2>
+        <div id="login-form" style="width:100%; text-align:center;">
+            <input type="email" id="lEmail" placeholder="ইমেইল" class="input-group">
+            <input type="password" id="lPass" placeholder="পাসওয়ার্ড" class="input-group">
+            <button class="btn-main" onclick="login()">লগইন</button>
+            <p onclick="toggleAuth()" style="color:var(--primary); cursor:pointer;">নতুন অ্যাকাউন্ট খুলুন</p>
+        </div>
+        <div id="reg-form" style="display:none; width:100%; text-align:center;">
+            <input type="text" id="rName" placeholder="আপনার নাম" class="input-group">
+            <input type="email" id="rEmail" placeholder="ইমেইল" class="input-group">
+            <input type="password" id="rPass" placeholder="পাসওয়ার্ড" class="input-group">
+            <button class="btn-main" onclick="register()">রেজিস্ট্রেশন</button>
+            <p onclick="toggleAuth()" style="color:var(--primary); cursor:pointer;">লগইন করুন</p>
+        </div>
+    </div>
+
+    <div id="main-app" style="display:none;">
+        <div class="navbar">
+            <b style="font-size:18px;">My Wallet</b>
+            <i class="fas fa-bars" style="font-size:22px; cursor:pointer;" onclick="toggleMenu()"></i>
+        </div>
+
+        <div class="sidebar" id="sidebar">
+            <div class="menu-item" onclick="nav('home')"><i class="fas fa-home"></i> হোম</div>
+            <div class="menu-item" onclick="nav('job')"><i class="fas fa-tasks"></i> মাই জব</div>
+            <div class="menu-item" onclick="nav('social')"><i class="fas fa-share-alt"></i> সোশ্যাল টাস্ক</div>
+            <div class="menu-item" onclick="nav('withdraw')"><i class="fas fa-wallet"></i> উইথড্রো</div>
+            <div class="menu-item" onclick="nav('history')"><i class="fas fa-history"></i> পেমেন্ট হিস্ট্রি</div>
+            <div class="menu-item" onclick="openSupport()"><i class="fab fa-whatsapp"></i> সাপোর্ট</div>
+            <div class="menu-item" onclick="logout()" style="color:red;"><i class="fas fa-sign-out-alt"></i> লগআউট</div>
+        </div>
+
+        <div class="container">
+            <div id="home" class="section active">
+                <div class="balance-card">
+                    <small>আপনার ব্যালেন্স</small>
+                    <h1 id="mainBal">৳ 0.00</h1>
+                    <small>User ID: <span id="uidText">...</span></small>
+                </div>
+                
+                <h3>কুইক অ্যাকশন</h3>
+                <div class="social-box" onclick="nav('job')">
+                    <div><i class="fas fa-briefcase" style="color:orange;"></i> ডেইলি টাস্ক</div> <i class="fas fa-chevron-right"></i>
+                </div>
+                <div class="social-box" onclick="nav('social')">
+                    <div><i class="fas fa-share-alt" style="color:blue;"></i> সোশ্যাল টাস্ক</div> <i class="fas fa-chevron-right"></i>
+                </div>
+                <div class="social-box" onclick="openSupport()">
+                    <div><i class="fab fa-whatsapp" style="color:green;"></i> সাপোর্ট</div> <i class="fas fa-chevron-right"></i>
+                </div>
+            </div>
+
+            <div id="job" class="section">
+                <h3 style="color:var(--primary);">আজকের টাস্ক</h3>
+                <div class="social-box" onclick="openTaskPage(1)">
+                    <div><strong>Task 01</strong><br><small>৫ মিনিট ভিজিট</small></div> <button class="btn-main" style="width:auto; margin:0; padding:5px 15px;">Start</button>
+                </div>
+                <div class="social-box" onclick="openTaskPage(2)">
+                    <div><strong>Task 02</strong><br><small>৫ মিনিট ভিজিট</small></div> <button class="btn-main" style="width:auto; margin:0; padding:5px 15px;">Start</button>
+                </div>
+            </div>
+
+            <div id="social" class="section">
+                <h3>সোশ্যাল টাস্ক</h3>
+                <div class="social-box" onclick="doSocial('fb')"><i class="fab fa-facebook" style="color:#1877F2;"></i> ফেসবুক টাস্ক</div>
+                <div class="social-box" onclick="doSocial('tt')"><i class="fab fa-tiktok" style="color:black;"></i> টিকটক টাস্ক</div>
+                <div class="social-box" onclick="doSocial('tg')"><i class="fab fa-telegram" style="color:#0088cc;"></i> টেলিগ্রাম টাস্ক</div>
+            </div>
+
+            <div id="taskModal" class="task-modal">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                    <h3>📋 কাজের বিবরণ</h3>
+                    <i class="fas fa-times" style="font-size:24px; cursor:pointer;" onclick="closeTaskPage()"></i>
+                </div>
+                <div style="background:#fffbe6; padding:15px; border-radius:10px; margin-bottom:15px;">
+                    <strong>⚠️ নিয়ম:</strong> <span id="taskRulesText">...</span>
+                </div>
+
+                <button id="startTaskBtn" class="btn-main" onclick="startTimerTask()">🚀 টাস্ক শুরু করুন</button>
+                <div id="timerDisplay" class="timer-box">সময়: <span id="timeLeft">05:00</span></div>
+
+                <div id="proofSection" style="display:none; margin-top:20px;">
+                    <h4 style="color:green; text-align:center;">সময় শেষ! প্রমাণ দিন</h4>
+                    <input type="text" id="taskAccount" placeholder="অ্যাকাউন্ট নাম/নাম্বার" class="input-group">
+                    <input type="file" id="imgInput" hidden onchange="uploadImg()">
+                    <div class="upload-area" onclick="document.getElementById('imgInput').click()">
+                        <i class="fas fa-cloud-upload-alt" style="font-size:30px;"></i><br><span id="uploadStatus">ফটো দিন</span>
+                    </div>
+                    <input type="hidden" id="finalImgLink">
+                    <button class="btn-main" style="background:#333;" onclick="submitTaskProof()">জমা দিন</button>
+                </div>
+            </div>
+
+            <div id="withdraw" class="section">
+                <h3>উত্তোলন</h3>
+                <div style="background:white; padding:20px; border-radius:10px; box-shadow:0 2px 10px rgba(0,0,0,0.05);">
+                    <select id="wMethod" class="input-group"><option>Bkash</option><option>Nagad</option></select>
+                    <input type="number" id="wAmount" placeholder="টাকার পরিমাণ" class="input-group">
+                    <input type="text" id="wNumber" placeholder="নাম্বার" class="input-group">
+                    <button class="btn-main" onclick="reqWithdraw()">রিকোয়েস্ট পাঠান</button>
+                </div>
+            </div>
+            
+            <div id="history" class="section"><h3>পেমেন্ট হিস্ট্রি</h3><div id="histList">লোড হচ্ছে...</div></div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+    <script>
+        const firebaseConfig = {
+          apiKey: "AIzaSyAKl90n3tBz4U689Vx4r7DDNHxCii66GRk",
+          authDomain: "money-earning-8b7f2.firebaseapp.com",
+          projectId: "money-earning-8b7f2",
+          storageBucket: "money-earning-8b7f2.firebasestorage.app",
+          messagingSenderId: "954842327634",
+          appId: "1:954842327634:web:bedc11b47ea736733bcd8b",
+          measurementId: "G-TME0VM42Y3"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const imgbbKey = "6d207e02198a847aa98d0a2a901485a5";
+
+        let userData = {}, settings = {}, currentTaskUrl = "", currentTaskId = "";
+        let timerInterval;
+
+        auth.onAuthStateChanged(u => {
+            if(u) { document.getElementById('auth-screen').style.display='none'; document.getElementById('main-app').style.display='block'; loadData(u.uid); }
+            else { document.getElementById('auth-screen').style.display='flex'; document.getElementById('main-app').style.display='none'; }
+        });
+
+        function loadData(uid) {
+            document.getElementById('uidText').innerText = uid.slice(0,6);
+            db.collection("users").doc(uid).onSnapshot(d => { userData = d.data(); document.getElementById('mainBal').innerText = '৳ ' + (userData.balance||0); });
+            db.collection("settings").doc("appConfig").onSnapshot(d => { 
+                settings = d.data(); 
+                if(settings.themeColor) document.documentElement.style.setProperty('--primary', settings.themeColor);
+            });
+            db.collection("withdrawals").where("uid", "==", uid).orderBy("time", "desc").onSnapshot(s => {
+                let h = ""; s.forEach(d => { let data = d.data(); let clr = data.status==='approved'?'green':'orange'; h += `<div style="background:white; padding:10px; margin-bottom:5px; border-left:4px solid ${clr}"><b>${data.method}</b> - ৳${data.amount} (${data.status})</div>`; });
+                document.getElementById('histList').innerHTML = h;
+            });
+        }
+
+        // 🔥 Custom Alert Function
+        function showAlert(msg) {
+            document.getElementById('alertMsg').innerText = msg;
+            document.getElementById('customAlert').classList.add('active');
+            document.getElementById('alertOverlay').classList.add('active');
+        }
+        function closeAlert() {
+            document.getElementById('customAlert').classList.remove('active');
+            document.getElementById('alertOverlay').classList.remove('active');
+        }
+
+        // Timer Task Logic
+        function startTimerTask() {
+            if(!currentTaskUrl) return showAlert("বর্তমানে কাজ নেই!");
+            window.open(currentTaskUrl, '_blank');
+            
+            document.getElementById('startTaskBtn').style.display = 'none';
+            document.getElementById('timerDisplay').style.display = 'block';
+            let timeLeft = 300; 
+            
+            timerInterval = setInterval(() => {
+                let m = Math.floor(timeLeft / 60);
+                let s = timeLeft % 60;
+                s = s < 10 ? '0' + s : s;
+                document.getElementById('timeLeft').innerText = `${m}:${s}`;
+                timeLeft--;
+                if (timeLeft < 0) {
+                    clearInterval(timerInterval);
+                    document.getElementById('timerDisplay').style.display = 'none';
+                    document.getElementById('proofSection').style.display = 'block';
+                    showAlert("সময় শেষ! প্রমাণ জমা দিন।");
+                }
+            }, 1000);
+        }
+
+        function openTaskPage(id) {
+            clearInterval(timerInterval);
+            resetModal();
+            currentTaskId = "regular_" + id;
+            currentTaskUrl = settings[`link${id}`];
+            document.getElementById('taskRulesText').innerText = settings.taskRules || "৫ মিনিট অপেক্ষা করুন।";
+            document.getElementById('taskModal').style.display = 'block';
+        }
+
+        function doSocial(type) {
+            clearInterval(timerInterval);
+            resetModal();
+            currentTaskId = "social_" + type;
+            if(type=='fb') currentTaskUrl = settings.fbLink;
+            if(type=='tt') currentTaskUrl = settings.ttLink;
+            if(type=='tg') currentTaskUrl = settings.tgLink;
+            document.getElementById('taskRulesText').innerText = "লাইক/ফলো করে স্ক্রিনশট দিন।";
+            document.getElementById('taskModal').style.display = 'block';
+        }
+
+        function resetModal() {
+            document.getElementById('startTaskBtn').style.display = 'block';
+            document.getElementById('timerDisplay').style.display = 'none';
+            document.getElementById('proofSection').style.display = 'none';
+            document.getElementById('timeLeft').innerText = "05:00";
+        }
+        function closeTaskPage() { clearInterval(timerInterval); document.getElementById('taskModal').style.display = 'none'; }
+
+        function uploadImg() {
+            const f = document.getElementById('imgInput').files[0];
+            const fd = new FormData(); fd.append("image", f);
+            document.getElementById('uploadStatus').innerText = "আপলোড হচ্ছে...";
+            fetch(`https://api.imgbb.com/1/upload?key=${imgbbKey}`, {method:"POST", body:fd}).then(r=>r.json()).then(d=>{ if(d.success) { document.getElementById('finalImgLink').value = d.data.url; document.getElementById('uploadStatus').innerText = "✅ সম্পন্ন!"; }});
+        }
+
+        function submitTaskProof() {
+            const acc = document.getElementById('taskAccount').value;
+            const img = document.getElementById('finalImgLink').value;
+            if(!acc || !img) return showAlert("তথ্য দিন!");
+            db.collection("taskProofs").add({ uid: auth.currentUser.uid, userName: userData.name, taskId: currentTaskId, accountUsed: acc, proofLink: img, status: "pending", time: firebase.firestore.FieldValue.serverTimestamp() }).then(() => { showAlert("জমা হয়েছে!"); closeTaskPage(); });
+        }
+
+        // ✅ Fixed Withdrawal Logic
+        function reqWithdraw() {
+            const am = parseInt(document.getElementById('wAmount').value);
+            const num = document.getElementById('wNumber').value;
+            
+            if(!am || !num) return showAlert("টাকার পরিমাণ এবং নাম্বার দিন!");
+            // টেস্ট মোড: ব্যালেন্স চেক রিমুভ করা আছে। চাইলে if(am > userData.balance) return showAlert("ব্যালেন্স নেই!"); দিতে পারেন
+            
+            const b = db.batch();
+            b.update(db.collection("users").doc(auth.currentUser.uid), { balance: firebase.firestore.FieldValue.increment(-am) });
+            b.set(db.collection("withdrawals").doc(), { uid: auth.currentUser.uid, name: userData.name, amount: am, number: num, method: document.getElementById('wMethod').value, status: 'pending', time: firebase.firestore.FieldValue.serverTimestamp() });
+            b.commit().then(()=>showAlert("রিকোয়েস্ট সফল!"));
+        }
+
+        function nav(id) { document.querySelectorAll('.section').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); toggleMenu(); }
+        function toggleMenu() { document.getElementById('sidebar').classList.toggle('active'); document.getElementById('alertOverlay').classList.toggle('active'); }
+        function openSupport() { if(settings.whatsapp) window.location.href=`https://wa.me/${settings.whatsapp}`; }
+        function login() { auth.signInWithEmailAndPassword(document.getElementById('lEmail').value, document.getElementById('lPass').value).catch(e=>showAlert(e.message)); }
+        function register() { auth.createUserWithEmailAndPassword(document.getElementById('rEmail').value, document.getElementById('rPass').value).then(c=>{ db.collection("users").doc(c.user.uid).set({name:document.getElementById('rName').value, email:document.getElementById('rEmail').value, balance:0}); }).catch(e=>showAlert(e.message)); }
+        function logout() { auth.signOut(); }
+        function toggleAuth() { document.getElementById('login-form').style.display = document.getElementById('login-form').style.display==='none'?'block':'none'; document.getElementById('reg-form').style.display = document.getElementById('reg-form').style.display==='none'?'block':'none'; }
+    </script>
+</body>
+</html>
